@@ -2,9 +2,109 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## Unreleased changes
+
+## 1.9.1 (2021-06-29)
+
+* Fixed: Retain `#mutations_from_database` when using ActiveType.cast (Rails 5.2+). Thanks to @unrooty-infinum.
+
+## 1.9.0 (2021-05-20)
+
+* Fixed: Extended records now use their own I18n namespace when looking up translations for models or attributes.
+  (introduced in [1.4.0](https://github.com/makandra/active_type/commit/b2aa4247ed1d45a4cd7e51e13d945cba7c38c597))
+
+  There was an issue ([#142](https://github.com/makandra/active_type/issues/142)) when extending an already extended records again. Now the I18n lookup will fall back
+  fall back correctly to the extended record's or even the base record's namespace.
+
+## 1.8.0 (2021-04-27)
+
+* Added: When casting an unsaved record, the new record will have the same associations as the base record.
+
+## 1.7.0 (2021-04-27)
+
+* Added: Support for Ruby 3.0.
+
+## 1.6.0 (2021-03-04)
+
+* Fixed: Numerous issues with Rails 6.1. Thanks to @vr4b4c for some of the changes.
+
+## 1.5.0 (2020-11-06)
+
+* Added: When serializing/deserializing `ActiveType::Record` or `ActiveType::Object` with YAML, virtual attributes are restored.
+  Credits to @chriscz.
+
+## 1.4.2 (2020-09-17)
+
+* Fixed: Assigning values to virtual attributes through internal setter methods (e.g. `_write_attribute`) no longer results in "can't write unknown attribute" errors.
+
+## 1.4.1 (2020-08-05)
+
+* Fixed: Avoid `Module#parents` deprecation warning on Rails 6. Thanks to @cilim.
+
+## 1.4.0 (2020-07-27)
+
+* Extended records now use their own I18n namespace when looking up translations for models or attributes.
+  If the extended record's namespace does not contain a translation, the lookup will fall back to the
+  base record's namespace.
+
+  For instance, given the following class hierarchy:
+
+  ```
+  class User < ActiveRecord::Base
+  end
+
+  class User::Form < ActiveType::Record[User]
+  end
+  ```
+
+  The call `ExtendedParent.human_attribute_name(:foo)` would first look up the key in
+  `activerecord.attributes.user/form` first, then falls back to `activerecord.attributes.user`.
+
+  Thank you @fsateler!
+
+
+## 1.3.2 (2020-06-16)
+
+* Fixed: `nests_one` association record building used empty hash instead of passed in attributes. Credit to @chriscz.
+
+
+## 1.3.1 (2020-03-31)
+
+* Fixed: Avoid #change_association breaking for polymorphic associations. Thanks to @lucthev.
+
+
+## 1.3.0 (2019-09-26)
 
 * Fixed: Do not override Rails internal methods when definining an attribute called `:attribute`.
+* Fixed: Fix .find for extended records, when a record had a `#type` column that was not used for
+  single table inheritance. Thanks to @fsateler.
+* Changed: When extending a single table inheritance base class, `.find` no longer crashes, but
+  returns records derived from the extended class.
+
+  This means, that given the following class hierarchy:
+
+  ```ruby
+  class Parent < ActiveRecord::Base
+  end
+
+  class ExtendedParent < ActiveType::Record[Parent]
+  end
+
+  class Child < Parent
+  end
+  ```
+
+  querying
+
+  ```
+  ExtendedParent.all
+  ```
+
+  will no longer crash, but always return records of type `ExtendedParent` (*even if they
+  would normally of type `Child`*). You should probably avoid this weird situation and not
+  extend STI Parent classes.
+
+  Thanks to @fsateler.
 
 
 ## 1.2.1 (2019-07-03)

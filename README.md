@@ -1,4 +1,4 @@
-ActiveType [![Build Status](https://travis-ci.org/makandra/active_type.svg?branch=master)](https://travis-ci.org/makandra/active_type)
+ActiveType [![Tests](https://github.com/makandra/active_type/workflows/Tests/badge.svg)](https://github.com/makandra/active_type/actions)
 ==========
 
 Make any Ruby object quack like ActiveRecord
@@ -51,7 +51,7 @@ end
 ```
 
 
-### A note on Rails 5
+### A note on Rails 5+
 
 Rails 5 comes with its own implementation of `.attribute`. This implementation is functionally very
 similar, but not identical to ActiveType's.
@@ -114,6 +114,9 @@ This means your object has all usual `ActiveRecord::Base` methods. Some of those
 - "saving" (returning `true` or `false`, without actually persisting)
 - belongs_to (after saying `attribute :child_id, :integer`)
 
+#### Note on transactions
+
+Since `ActiveType::Object` is not backed by a database, it does not open a real transaction when saving, so you should not rely on database changes that might have happend in a `#save` callback to be rolled back when `#save` fails. If you need this, make sure to wrap those changes in an explicit transaction yourself.
 
 ### ActiveType::Record
 
@@ -126,12 +129,23 @@ Virtual attributes will not be persisted.
 
 `ActiveType::Record[BaseClass]` is used to extend a given `BaseClass` (that itself has to be an `ActiveRecord` model) with additional functionality, that is not meant to be shared to the rest of the application.
 
-You class will inherit from `BaseClass`. You can add additional methods, validations, callbacks, as well as use (virtual) attributes like an `ActiveType::Object`:
+Your class will inherit from `BaseClass`. You can add additional methods, validations, callbacks, as well as use (virtual) attributes like an `ActiveType::Object`:
 
 ```ruby
 class SignUp < ActiveType::Record[User]
   # ...
 end
+```
+
+If you need to access the extended `BaseClass` from your presenter model, you may call `extended_record_base_class` on its class:
+
+```ruby
+SignUp.extended_record_base_class # => "User (...)"
+
+# or
+sign_up = SignUp.new
+sign_up.class # => "SignUp (...)"
+sign_up.class.extended_record_base_class # => "User (...)"
 ```
 
 ### Inheriting from ActiveType:: objects
@@ -391,14 +405,14 @@ Now, if you load `credentials`, you will automatically receive records of type `
 Supported Rails versions
 ------------------------
 
-ActiveType is tested against ActiveRecord 3.2, 4.2, 5.1, and 5.2.
+ActiveType is tested against ActiveRecord 3.2, 4.2, 5.1, 5.2, 6.0 and 6.1.
 
 Later versions might work, earlier will not.
 
 Supported Ruby versions
 ------------------------
 
-ActiveType is tested against 2.3, 2.4, and 2.5.
+ActiveType is tested against 2.3, 2.4, 2.5 and 3.0.
 
 
 Installation
@@ -426,7 +440,7 @@ If you would like to contribute:
 - Push your changes **with passing specs**.
 - Send us a pull request.
 
-I'm very eager to keep this gem leightweight and on topic. If you're unsure whether a change would make it into the gem, [talk to me beforehand](mailto:henning.koch@makandra.de).
+I'm very eager to keep this gem lightweight and on topic. If you're unsure whether a change would make it into the gem, [talk to me beforehand](mailto:henning.koch@makandra.de).
 
 
 Credits

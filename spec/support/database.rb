@@ -17,6 +17,11 @@ database.rewrite_schema! do
     t.boolean :nice
   end
 
+  create_table :pictures do |t|
+    t.integer :imageable_id
+    t.string :imageable_type
+  end
+
   create_table :uuid_records, id: false do |t|
     t.string :id, primary_key: true, limit: 100
     t.string :persisted_string
@@ -31,4 +36,14 @@ database.rewrite_schema! do
     t.string :other_string
   end
 
+  create_table :cars do |t|
+  end
+
+  create_table :wheels do |t|
+    t.integer :car_id
+  end
+
+  create_table :steering_wheels do |t|
+    t.string :car_id
+  end
 end

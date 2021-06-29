@@ -51,7 +51,34 @@ describe "ActiveType::Record[ActiveRecord::Base]" do
   end
 
   it 'has the same model name as the base class' do
-    expect(subject.class.model_name.singular).to eq(RecordExtensionSpec::Record.model_name.singular)
+    base_model_name = RecordExtensionSpec::Record.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.singular).to eq(base_model_name.singular)
+    expect(model_name.plural).to eq(base_model_name.plural)
+  end
+
+  it 'has the same route keys as the base class' do
+    base_model_name = RecordExtensionSpec::Record.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.route_key).to eq(base_model_name.route_key)
+    expect(model_name.singular_route_key).to eq(base_model_name.singular_route_key)
+  end
+
+  it 'has the same param key as the base class' do
+    base_model_name = RecordExtensionSpec::Record.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.param_key).to eq(base_model_name.param_key)
+  end
+
+  it 'has a different i18n_key than the base class' do
+    base_model_name = RecordExtensionSpec::Record.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.i18n_key).not_to eq(base_model_name.i18n_key)
+    expect(model_name.i18n_key).to eq(:'record_extension_spec/extended_record')
   end
 
   describe 'constructors' do
@@ -134,7 +161,34 @@ describe "class ... < ActiveType::Record[ActiveRecord::Base]" do
   end
 
   it 'has the same model name as the base class' do
-    expect(subject.class.model_name.singular).to eq(RecordExtensionSpec::Record.model_name.singular)
+    base_model_name = RecordExtensionSpec::ExtendedRecord.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.singular).to eq(base_model_name.singular)
+    expect(model_name.plural).to eq(base_model_name.plural)
+  end
+
+  it 'has the same route keys as the base class' do
+    base_model_name = RecordExtensionSpec::ExtendedRecord.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.route_key).to eq(base_model_name.route_key)
+    expect(model_name.singular_route_key).to eq(base_model_name.singular_route_key)
+  end
+
+  it 'has the same param key as the base class' do
+    base_model_name = RecordExtensionSpec::ExtendedRecord.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.param_key).to eq(base_model_name.param_key)
+  end
+
+  it 'has a different i18n_key than the base class' do
+    base_model_name = RecordExtensionSpec::ExtendedRecord.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.i18n_key).not_to eq(base_model_name.i18n_key)
+    expect(model_name.i18n_key).to eq(:'record_extension_spec/inheriting_from_extended_record')
   end
 
   describe '#attributes' do
@@ -186,7 +240,34 @@ describe "ActiveType::Record[ActiveType::Record]" do
   end
 
   it 'has the same model name as the base class' do
-    expect(subject.class.model_name.singular).to eq(RecordExtensionSpec::BaseActiveTypeRecord.model_name.singular)
+    base_model_name = RecordExtensionSpec::BaseActiveTypeRecord.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.singular).to eq(base_model_name.singular)
+    expect(model_name.plural).to eq(base_model_name.plural)
+  end
+
+  it 'has the same route keys as the base class' do
+    base_model_name = RecordExtensionSpec::BaseActiveTypeRecord.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.route_key).to eq(base_model_name.route_key)
+    expect(model_name.singular_route_key).to eq(base_model_name.singular_route_key)
+  end
+
+  it 'has the same param key as the base class' do
+    base_model_name = RecordExtensionSpec::BaseActiveTypeRecord.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.param_key).to eq(base_model_name.param_key)
+  end
+
+  it 'has a different i18n_key than the base class' do
+    base_model_name = RecordExtensionSpec::BaseActiveTypeRecord.model_name
+    model_name = subject.class.model_name
+
+    expect(model_name.i18n_key).not_to eq(base_model_name.i18n_key)
+    expect(model_name.i18n_key).to eq(:'record_extension_spec/extended_active_type_record')
   end
 
   describe 'constructors' do
@@ -256,4 +337,45 @@ describe "ActiveType::Record[ActiveType::Record]" do
     end
   end
 
+end
+
+describe 'i18n' do
+
+  around :each do |test|
+    begin
+      orig_backend = I18n.backend
+      I18n.backend = I18n::Backend::KeyValue.new({})
+      test.run
+    ensure
+      I18n.backend = orig_backend
+    end
+  end
+
+  describe 'translation of model name' do
+
+    it 'has its own I18n key' do
+      I18n.backend.store_translations(:en, activerecord: { models: { 'record_extension_spec/extended_record': 'ExtendedRecord translation' } })
+      expect(RecordExtensionSpec::ExtendedRecord.model_name.human).to eq('ExtendedRecord translation')
+    end
+
+    it 'falls back to the I18n key of the base class if does not have its own I18n key' do
+      I18n.backend.store_translations(:en, activerecord: { models: { 'record_extension_spec/record': 'BaseRecord translation' } })
+      expect(RecordExtensionSpec::ExtendedRecord.model_name.human).to eq('BaseRecord translation')
+    end
+
+  end
+
+  describe 'translation of attribute name' do
+
+    it 'has its own I18n key' do
+      I18n.backend.store_translations(:en, activerecord: { attributes: { 'record_extension_spec/extended_record': { persisted_string: 'ExtendedRecord translation' } } })
+      expect(RecordExtensionSpec::ExtendedRecord.human_attribute_name(:persisted_string)).to eq('ExtendedRecord translation')
+    end
+
+    it 'falls back to the I18n key of the base class if does not have its own I18n key' do
+      I18n.backend.store_translations(:en, activerecord: { attributes: { 'record_extension_spec/record': { persisted_string: 'BaseRecord translation' } } })
+      expect(RecordExtensionSpec::ExtendedRecord.human_attribute_name(:persisted_string)).to eq('BaseRecord translation')
+    end
+
+  end
 end
